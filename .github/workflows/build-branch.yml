@@ -49,18 +49,17 @@ jobs:
     # ONLY run if triggered manually, OR if commit message contains "release", OR if a tag is pushed
     if: >
       github.event_name == 'workflow_dispatch' || 
-      contains(tolower(github.event.head_commit.message), 'release') || 
+      contains(github.event.head_commit.message, 'release') || 
       startsWith(github.ref, 'refs/tags/')
     name: Build Setup
     runs-on: ubuntu-24.04-arm
     outputs:
       gh_branch_name: ${{ steps.set_env_variables.outputs.TARGET_BRANCH }}
-      dh_img_web: plane-frontend
-      dh_img_space: plane-space
-      dh_img_admin: plane-admin
-      dh_img_live: plane-live
-      dh_img_backend: plane-backend
-      dh_img_proxy: plane-proxy
+      dh_img_web: slane-frontend
+      dh_img_space: slane-space
+      dh_img_admin: slane-admin
+      dh_img_live: slane-live
+      dh_img_backend: slane-backend
     steps:
       - id: set_env_variables
         name: Set Environment Variables
@@ -72,7 +71,7 @@ jobs:
     # ONLY run if triggered manually, OR if commit message contains "release", OR if a tag is pushed
     if: >
       github.event_name == 'workflow_dispatch' || 
-      contains(tolower(github.event.head_commit.message), 'release') || 
+      contains(github.event.head_commit.message, 'release') || 
       startsWith(github.ref, 'refs/tags/')
     name: Build-Push Admin Docker Image
     runs-on: ubuntu-24.04-arm
@@ -100,7 +99,7 @@ jobs:
     # ONLY run if triggered manually, OR if commit message contains "release", OR if a tag is pushed
     if: >
       github.event_name == 'workflow_dispatch' || 
-      contains(tolower(github.event.head_commit.message), 'release') || 
+      contains(github.event.head_commit.message, 'release') || 
       startsWith(github.ref, 'refs/tags/')
     name: Build-Push Web Docker Image
     runs-on: ubuntu-24.04-arm
@@ -128,7 +127,7 @@ jobs:
     # ONLY run if triggered manually, OR if commit message contains "release", OR if a tag is pushed
     if: >
       github.event_name == 'workflow_dispatch' || 
-      contains(tolower(github.event.head_commit.message), 'release') || 
+      contains(github.event.head_commit.message, 'release') || 
       startsWith(github.ref, 'refs/tags/')
     name: Build-Push Space Docker Image
     runs-on: ubuntu-24.04-arm
@@ -156,7 +155,7 @@ jobs:
     # ONLY run if triggered manually, OR if commit message contains "release", OR if a tag is pushed
     if: >
       github.event_name == 'workflow_dispatch' || 
-      contains(tolower(github.event.head_commit.message), 'release') || 
+      contains(github.event.head_commit.message, 'release') || 
       startsWith(github.ref, 'refs/tags/')
     name: Build-Push Live Docker Image
     runs-on: ubuntu-24.04-arm
@@ -184,7 +183,7 @@ jobs:
     # ONLY run if triggered manually, OR if commit message contains "release", OR if a tag is pushed
     if: >
       github.event_name == 'workflow_dispatch' || 
-      contains(tolower(github.event.head_commit.message), 'release') || 
+      contains(github.event.head_commit.message, 'release') || 
       startsWith(github.ref, 'refs/tags/')
     name: Build-Push API Server Docker Image
     runs-on: ubuntu-24.04-arm
