@@ -61,6 +61,7 @@
         "attachment_count": "Ek sayısı",
         "created_on": "Oluşturulma tarihi",
         "sub_issue": "Alt iş öğesi",
+        "time_tracking": "Time Tracking",
         "work_item_count": "İş öğesi sayısı"
       },
       "extra": {

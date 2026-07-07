@@ -31,6 +31,7 @@ from plane.app.views import (
     WorkItemDescriptionVersionEndpoint,
     IssueMetaEndpoint,
     IssueDetailIdentifierEndpoint,
+    TimeLogViewSet,
 )
 
 urlpatterns = [
@@ -184,7 +185,9 @@ urlpatterns = [
     ),
     path(
         "workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/subscribe/",
-        IssueSubscriberViewSet.as_view({"get": "subscription_status", "post": "subscribe", "delete": "unsubscribe"}),
+        IssueSubscriberViewSet.as_view(
+            {"get": "subscription_status", "post": "subscribe", "delete": "unsubscribe"}
+        ),
         name="project-issue-subscribers",
     ),
     ## End Issue Subscribers
@@ -227,7 +230,9 @@ urlpatterns = [
     ),
     path(
         "workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:pk>/archive/",
-        IssueArchiveViewSet.as_view({"get": "retrieve", "post": "archive", "delete": "unarchive"}),
+        IssueArchiveViewSet.as_view(
+            {"get": "retrieve", "post": "archive", "delete": "unarchive"}
+        ),
         name="project-issue-archive-unarchive",
     ),
     ## End Issue Archives
@@ -267,6 +272,27 @@ urlpatterns = [
         "workspaces/<str:slug>/projects/<uuid:project_id>/work-items/<uuid:work_item_id>/description-versions/",
         WorkItemDescriptionVersionEndpoint.as_view(),
         name="work-item-versions",
+    ),
+    path(
+        "workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/time-logs/",
+        TimeLogViewSet.as_view({"get": "list", "post": "create"}),
+        name="project-issue-time-logs",
+    ),
+    path(
+        "workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/time-logs/<uuid:pk>/",
+        TimeLogViewSet.as_view(
+            {
+                "get": "retrieve",
+                "patch": "partial_update",
+                "delete": "destroy",
+            }
+        ),
+        name="project-issue-time-logs",
+    ),
+    path(
+        "workspaces/<str:slug>/projects/<uuid:project_id>/issues/<uuid:issue_id>/time-logs/<uuid:pk>/stop/",
+        TimeLogViewSet.as_view({"post": "stop"}),
+        name="project-issue-time-logs-stop",
     ),
     path(
         "workspaces/<str:slug>/projects/<uuid:project_id>/work-items/<uuid:work_item_id>/description-versions/<uuid:pk>/",

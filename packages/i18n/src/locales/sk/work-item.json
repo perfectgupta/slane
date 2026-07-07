@@ -61,6 +61,7 @@
         "attachment_count": "Počet príloh",
         "created_on": "Vytvorené dňa",
         "sub_issue": "Podriadená položka",
+        "time_tracking": "Time Tracking",
         "work_item_count": "Počet pracovných položiek"
       },
       "extra": {

@@ -53,6 +53,8 @@ export type TIssueOrderByOptions =
   | "-link_count"
   | "attachment_count"
   | "-attachment_count"
+  | "time_tracking"
+  | "-time_tracking"
   | "sub_issues_count"
   | "-sub_issues_count";
 
@@ -62,6 +64,7 @@ export type TIssueExtraOptions = "show_empty_groups" | "sub_issue";
 
 export type TIssueParams =
   | "priority"
+  | "tracking_time"
   | "state_group"
   | "state"
   | "assignees"
@@ -144,6 +147,7 @@ export interface IIssueFilterOptions {
   subscriber?: string[] | null;
   target_date?: string[] | null;
   issue_type?: string[] | null;
+  time_tracking?: string[] | null;
 }
 
 export interface IIssueDisplayFilterOptions {
@@ -157,6 +161,7 @@ export interface IIssueDisplayFilterOptions {
   order_by?: TIssueOrderByOptions;
   show_empty_groups?: boolean;
   sub_issue?: boolean;
+  time_tracking?: boolean;
 }
 export interface IIssueDisplayProperties {
   assignee?: boolean;
@@ -175,6 +180,7 @@ export interface IIssueDisplayProperties {
   modules?: boolean;
   cycle?: boolean;
   issue_type?: boolean;
+  time_tracking?: boolean;
 }
 
 export type TIssueKanbanFilters = {
@@ -231,6 +237,7 @@ export interface IWorkspaceIssueFilterOptions {
 
 export interface IWorkspaceViewIssuesParams {
   assignees?: string | undefined;
+  tracking_time?: boolean;
   created_by?: string | undefined;
   labels?: string | undefined;
   priority?: string | undefined;

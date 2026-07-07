@@ -45,6 +45,7 @@ import type { TIssueOperations } from "../issue-detail";
 import { IssueCycleSelect } from "../issue-detail/cycle-select";
 import { IssueLabel } from "../issue-detail/label";
 import { IssueModuleSelect } from "../issue-detail/module-select";
+import { IssueTimelogProperty } from "../issue-layouts/properties/time-tracking";
 
 interface IPeekOverviewProperties {
   workspaceSlug: string;
@@ -85,7 +86,11 @@ export const PeekOverviewProperties = observer(function PeekOverviewProperties(p
         <SidebarPropertyListItem icon={StatePropertyIcon} label={t("common.state")}>
           <StateDropdown
             value={issue?.state_id}
-            onChange={(val) => issueOperations.update(workspaceSlug, projectId, issueId, { state_id: val })}
+            onChange={(val) =>
+              issueOperations.update(workspaceSlug, projectId, issueId, {
+                state_id: val,
+              })
+            }
             projectId={projectId}
             disabled={disabled}
             buttonVariant="transparent-with-text"
@@ -97,10 +102,16 @@ export const PeekOverviewProperties = observer(function PeekOverviewProperties(p
           />
         </SidebarPropertyListItem>
 
+        <IssueTimelogProperty projectId={projectId} issueId={issueId} workspaceSlug={workspaceSlug} />
+
         <SidebarPropertyListItem icon={MembersPropertyIcon} label={t("common.assignees")}>
           <MemberDropdown
             value={issue?.assignee_ids ?? undefined}
-            onChange={(val) => issueOperations.update(workspaceSlug, projectId, issueId, { assignee_ids: val })}
+            onChange={(val) =>
+              issueOperations.update(workspaceSlug, projectId, issueId, {
+                assignee_ids: val,
+              })
+            }
             disabled={disabled}
             projectId={projectId}
             placeholder={t("issue.add.assignee")}
@@ -118,7 +129,11 @@ export const PeekOverviewProperties = observer(function PeekOverviewProperties(p
         <SidebarPropertyListItem icon={PriorityPropertyIcon} label={t("common.priority")}>
           <PriorityDropdown
             value={issue?.priority}
-            onChange={(val) => issueOperations.update(workspaceSlug, projectId, issueId, { priority: val })}
+            onChange={(val) =>
+              issueOperations.update(workspaceSlug, projectId, issueId, {
+                priority: val,
+              })
+            }
             disabled={disabled}
             buttonVariant="transparent-with-text"
             className="h-7.5 w-full grow rounded-sm"
@@ -193,7 +208,11 @@ export const PeekOverviewProperties = observer(function PeekOverviewProperties(p
           <SidebarPropertyListItem icon={EstimatePropertyIcon} label={t("common.estimate")}>
             <EstimateDropdown
               value={issue.estimate_point ?? undefined}
-              onChange={(val) => issueOperations.update(workspaceSlug, projectId, issueId, { estimate_point: val })}
+              onChange={(val) =>
+                issueOperations.update(workspaceSlug, projectId, issueId, {
+                  estimate_point: val,
+                })
+              }
               projectId={projectId}
               disabled={disabled}
               buttonVariant="transparent-with-text"

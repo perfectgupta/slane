@@ -102,7 +102,7 @@ export const ProfileIssuesMobileHeader = observer(function ProfileIssuesMobileHe
           if (layout.key === "spreadsheet" || layout.key === "gantt_chart" || layout.key === "calendar") return;
           return (
             <CustomMenu.MenuItem
-              key={index}
+              key={layout.key}
               onClick={() => {
                 handleLayoutChange(ISSUE_LAYOUTS[index].key);
               }}

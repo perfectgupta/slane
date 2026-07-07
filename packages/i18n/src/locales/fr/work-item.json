@@ -61,6 +61,7 @@
         "attachment_count": "Nombre de pièces jointes",
         "created_on": "Créé le",
         "sub_issue": "Sous-élément de travail",
+        "time_tracking": "Time Tracking",
         "work_item_count": "Nombre d’éléments de travail"
       },
       "extra": {

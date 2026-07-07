@@ -61,6 +61,8 @@
         "attachment_count": "Số lượng tệp đính kèm",
         "created_on": "Được tạo vào",
         "sub_issue": "Mục công việc con",
+
+        "time_tracking": "Time Tracking",
         "work_item_count": "Số lượng mục công việc"
       },
       "extra": {

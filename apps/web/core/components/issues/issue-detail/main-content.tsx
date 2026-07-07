@@ -176,10 +176,10 @@ export const IssueMainContent = observer(function IssueMainContent(props: Props)
                 isRestoreDisabled: !isEditable || isArchived,
               }}
               fetchHandlers={{
-                listDescriptionVersions: (issueId) =>
-                  workItemVersionService.listDescriptionVersions(workspaceSlug, projectId, issueId),
-                retrieveDescriptionVersion: (issueId, versionId) =>
-                  workItemVersionService.retrieveDescriptionVersion(workspaceSlug, projectId, issueId, versionId),
+                listDescriptionVersions: (issueIdB) =>
+                  workItemVersionService.listDescriptionVersions(workspaceSlug, projectId, issueIdB),
+                retrieveDescriptionVersion: (issueIdA, versionId) =>
+                  workItemVersionService.retrieveDescriptionVersion(workspaceSlug, projectId, issueIdA, versionId),
               }}
               handleRestore={(descriptionHTML) => editorRef.current?.setEditorValue(descriptionHTML, true)}
               projectId={projectId}

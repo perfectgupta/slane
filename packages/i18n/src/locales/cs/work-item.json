@@ -61,6 +61,7 @@
         "attachment_count": "Počet příloh",
         "created_on": "Vytvořeno dne",
         "sub_issue": "Podřízená položka",
+        "time_tracking": "Time Tracking",
         "work_item_count": "Počet pracovních položek"
       },
       "extra": {

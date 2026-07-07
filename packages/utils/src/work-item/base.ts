@@ -282,6 +282,7 @@ export const getComputedDisplayFilters = (
     group_by: filters?.group_by || null,
     sub_group_by: filters?.sub_group_by || null,
     sub_issue: filters?.sub_issue || false,
+    time_tracking: filters?.time_tracking || true,
     show_empty_groups: filters?.show_empty_groups || false,
   };
 };
@@ -301,6 +302,7 @@ export const getComputedDisplayProperties = (
   priority: displayProperties?.priority ?? true,
   state: displayProperties?.state ?? true,
   sub_issue_count: displayProperties?.sub_issue_count ?? true,
+  time_tracking: displayProperties?.time_tracking ?? true,
   attachment_count: displayProperties?.attachment_count ?? true,
   link: displayProperties?.link ?? true,
   estimate: displayProperties?.estimate ?? true,

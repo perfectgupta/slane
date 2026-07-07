@@ -61,6 +61,7 @@
         "attachment_count": "Jumlah lampiran",
         "created_on": "Dibuat pada",
         "sub_issue": "Sub-item kerja",
+        "time_tracking": "Time Tracking",
         "work_item_count": "Jumlah item kerja"
       },
       "extra": {

@@ -1,3 +1,4 @@
+/* oxlint-disable @typescript-eslint/no-duplicate-enum-values */
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -35,7 +36,7 @@ export enum EIssueGroupByToServerOptions {
   "target_date" = "target_date",
   "project" = "project_id",
   "created_by" = "created_by",
-  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
+  // oxlint-disable-next-line @typescript-eslint/no-duplicate-enum-values
   "team_project" = "project_id",
 }
 
@@ -141,6 +142,7 @@ export const ISSUE_ORDER_BY_OPTIONS: {
 
 export const ISSUE_DISPLAY_PROPERTIES_KEYS: (keyof IIssueDisplayProperties)[] = [
   "assignee",
+  "time_tracking",
   "start_date",
   "due_date",
   "labels",
@@ -180,6 +182,10 @@ export const ISSUE_DISPLAY_PROPERTIES: {
     titleTranslationKey: "common.assignee",
   },
   {
+    key: "time_tracking",
+    titleTranslationKey: "issue.display.properties.time_tracking",
+  },
+  {
     key: "start_date",
     titleTranslationKey: "common.order_by.start_date",
   },
@@ -213,6 +219,7 @@ export const ISSUE_DISPLAY_PROPERTIES: {
 export const SPREADSHEET_PROPERTY_LIST: (keyof IIssueDisplayProperties)[] = [
   "state",
   "priority",
+  "time_tracking",
   "assignee",
   "labels",
   "modules",
@@ -244,6 +251,14 @@ export const SPREADSHEET_PROPERTY_DETAILS: {
     descendingOrderKey: "-assignees__first_name",
     descendingOrderTitle: "Z",
     icon: "MembersPropertyIcon",
+  },
+  time_tracking: {
+    i18n_title: "issue.display.properties.time_tracking",
+    ascendingOrderKey: "-tracking_time",
+    ascendingOrderTitle: "Most",
+    descendingOrderKey: "tracking_time",
+    descendingOrderTitle: "Least",
+    icon: "TimerIcon",
   },
   created_on: {
     i18n_title: "common.sort.created_on",

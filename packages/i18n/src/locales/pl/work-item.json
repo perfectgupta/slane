@@ -61,6 +61,7 @@
         "attachment_count": "Liczba załączników",
         "created_on": "Utworzono dnia",
         "sub_issue": "Element podrzędny",
+        "time_tracking": "Time Tracking",
         "work_item_count": "Liczba elementów pracy"
       },
       "extra": {

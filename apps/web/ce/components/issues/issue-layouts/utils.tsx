@@ -5,7 +5,7 @@
  */
 
 import type { FC } from "react";
-import { CalendarDays, LayersIcon, Paperclip } from "lucide-react";
+import { CalendarDays, LayersIcon, Paperclip, Timer } from "lucide-react";
 // types
 import { ISSUE_GROUP_BY_OPTIONS } from "@plane/constants";
 import type { ISvgIcons } from "@plane/propel/icons";
@@ -44,6 +44,7 @@ import {
   SpreadsheetStateColumn,
   SpreadsheetSubIssueColumn,
   SpreadsheetUpdatedOnColumn,
+  SpreadsheetTimeTrackingColumn,
 } from "@/components/issues/issue-layouts/spreadsheet/columns";
 // store
 import { store } from "@/lib/store-context";
@@ -92,9 +93,12 @@ export const SpreadSheetPropertyIconMap: Record<string, FC<ISvgIcons>> = {
   Link2: LinkIcon,
   Paperclip: Paperclip,
   LayersIcon: LayersIcon,
+  TimerIcon: Timer,
 };
 
-export const SPREADSHEET_COLUMNS: { [key in keyof IIssueDisplayProperties]: TSpreadsheetColumn } = {
+export const SPREADSHEET_COLUMNS: {
+  [key in keyof IIssueDisplayProperties]: TSpreadsheetColumn;
+} = {
   assignee: SpreadsheetAssigneeColumn,
   created_on: SpreadsheetCreatedOnColumn,
   due_date: SpreadsheetDueDateColumn,
@@ -109,6 +113,7 @@ export const SPREADSHEET_COLUMNS: { [key in keyof IIssueDisplayProperties]: TSpr
   sub_issue_count: SpreadsheetSubIssueColumn,
   updated_on: SpreadsheetUpdatedOnColumn,
   attachment_count: SpreadsheetAttachmentColumn,
+  time_tracking: SpreadsheetTimeTrackingColumn,
 };
 
 export const useGroupByOptions = (

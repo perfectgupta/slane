@@ -39,10 +39,10 @@ class LLMProvider:
         }
 
 
-class OpenAIProvider(LLMProvider):
-    name = "OpenAI"
+class OllamaProvider(LLMProvider):
+    name = "Ollama"
     models = ["gpt-3.5-turbo", "gpt-4o-mini", "gpt-4o", "o1-mini", "o1-preview"]
-    default_model = "gpt-4o-mini"
+    default_model = "gemma4:31b"
 
 
 class AnthropicProvider(LLMProvider):
@@ -63,11 +63,11 @@ class AnthropicProvider(LLMProvider):
 class GeminiProvider(LLMProvider):
     name = "Gemini"
     models = ["gemini-pro", "gemini-1.5-pro-latest", "gemini-pro-vision"]
-    default_model = "gemini-pro"
+    default_model = "gemma4:31b"
 
 
 SUPPORTED_PROVIDERS = {
-    "openai": OpenAIProvider,
+    "ollama": OllamaProvider,
     "anthropic": AnthropicProvider,
     "gemini": GeminiProvider,
 }
@@ -86,11 +86,11 @@ def get_llm_config() -> Tuple[str | None, str | None, str | None]:
             },
             {
                 "key": "LLM_PROVIDER",
-                "default": os.environ.get("LLM_PROVIDER", "openai"),
+                "default": os.environ.get("LLM_PROVIDER", "ollama"),
             },
             {
                 "key": "LLM_MODEL",
-                "default": os.environ.get("LLM_MODEL", None),
+                "default": os.environ.get("LLM_MODEL", "gemma4:31b"),
             },
         ]
     )
@@ -120,7 +120,9 @@ def get_llm_config() -> Tuple[str | None, str | None, str | None]:
     return api_key, model, provider_key
 
 
-def get_llm_response(task, prompt, api_key: str, model: str, provider: str) -> Tuple[str | None, str | None]:
+def get_llm_response(
+    task, prompt, api_key: str, model: str, provider: str
+) -> Tuple[str | None, str | None]:
     """Helper to get LLM completion response"""
     final_text = task + "\n" + prompt
     try:
@@ -128,7 +130,11 @@ def get_llm_response(task, prompt, api_key: str, model: str, provider: str) -> T
         if provider.lower() == "gemini":
             model = f"gemini/{model}"
 
-        client = OpenAI(api_key=api_key)
+        if provider.lower() == "ollama":
+            client = OpenAI(api_key=api_key, base_url="https://ollama.com/v1")
+        else:
+            client = OpenAI(api_key=api_key)
+
         chat_completion = client.chat.completions.create(
             model=model, messages=[{"role": "user", "content": final_text}]
         )
@@ -158,9 +164,13 @@ class GPTIntegrationEndpoint(BaseAPIView):
 
         task = request.data.get("task", False)
         if not task:
-            return Response({"error": "Task is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Task is required"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
-        text, error = get_llm_response(task, request.data.get("prompt", False), api_key, model, provider)
+        text, error = get_llm_response(
+            task, request.data.get("prompt", False), api_key, model, provider
+        )
         if not text and error:
             return Response(
                 {"error": "An internal error has occurred."},
@@ -194,9 +204,13 @@ class WorkspaceGPTIntegrationEndpoint(BaseAPIView):
 
         task = request.data.get("task", False)
         if not task:
-            return Response({"error": "Task is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Task is required"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
-        text, error = get_llm_response(task, request.data.get("prompt", False), api_key, model, provider)
+        text, error = get_llm_response(
+            task, request.data.get("prompt", False), api_key, model, provider
+        )
         if not text and error:
             return Response(
                 {"error": "An internal error has occurred."},

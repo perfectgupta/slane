@@ -87,6 +87,22 @@ type IssueRelation = {
   sequence_id: number;
 };
 
+export type IssueTimeLog = {
+  id: string;
+  issue_id: string;
+  project_id: string;
+  workspace_id: string;
+  description: string;
+  tracking_start_time: string | null;
+  tracking_end_time: string | null;
+  time_seconds: number;
+  is_running: boolean;
+  created_by: string;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type TIssue = TBaseIssue & {
   description_html?: string;
   is_subscribed?: boolean;
@@ -101,6 +117,12 @@ export type TIssue = TBaseIssue & {
   // sourceIssueId is used to store the original issue id when creating a copy of an issue. Used in cloning property values. It is not a part of the API response.
   sourceIssueId?: string;
   state__group?: TStateGroups | null;
+  total_tracked_seconds?: number;
+  time_logs?: IssueTimeLog[];
+  running_time_log?: {
+    id: string;
+    start_time: string;
+  } | null;
 };
 
 export type TIssueMap = {
@@ -155,7 +177,7 @@ export type TBulkOperationsPayload = {
   properties: Partial<TBulkIssueProperties>;
 };
 
-export type TWorkItemWidgets = "sub-work-items" | "relations" | "links" | "attachments";
+export type TWorkItemWidgets = "sub-work-items" | "time_logs" | "relations" | "links" | "attachments";
 
 export type TIssueServiceType = EIssueServiceType.ISSUES | EIssueServiceType.EPICS | EIssueServiceType.WORK_ITEMS;
 

@@ -456,4 +456,31 @@ export class IssueService extends APIService {
         throw error?.response?.data;
       });
   }
+
+  async startTimeLog(workspaceSlug: string, projectId: string, issueId: string, data: any) {
+    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/time-logs/`, data);
+  }
+
+  async stopTimeLog(workspaceSlug: string, projectId: string, issueId: string, timeLogId: string) {
+    return this.post(
+      `/api/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/time-logs/${timeLogId}/stop/`
+    );
+  }
+
+  async getTimeLogs(workspaceSlug: string, projectId: string, issueId: string) {
+    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/time-logs/`);
+  }
+
+  async updateTimeLog(workspaceSlug: string, projectId: string, issueId: string, timeLogId: string, data: any) {
+    return this.patch(
+      `/api/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/time-logs/${timeLogId}/`,
+      data
+    );
+  }
+
+  async deleteTimeLog(workspaceSlug: string, projectId: string, issueId: string, timeLogId: string) {
+    return this.delete(
+      `/api/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/time-logs/${timeLogId}/`
+    );
+  }
 }

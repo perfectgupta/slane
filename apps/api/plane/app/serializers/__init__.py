@@ -82,6 +82,7 @@ from .issue import (
     IssueVersionDetailSerializer,
     IssueDescriptionVersionDetailSerializer,
     IssueListDetailSerializer,
+    TimeLogSerializer,
 )
 
 from .module import (

@@ -26,6 +26,7 @@ import { IssuePeekOverviewHeader } from "./header";
 import { PeekOverviewIssueDetails } from "./issue-detail";
 import { IssuePeekOverviewLoader } from "./loader";
 import { PeekOverviewProperties } from "./properties";
+import { StandaloneTimeLogFeed } from "../issue-detail/issue-time-log/time-log-activity";
 
 interface IIssueView {
   workspaceSlug: string;
@@ -205,6 +206,9 @@ export const IssueView = observer(function IssueView(props: IIssueView) {
                       disabled={disabled || is_archived}
                     />
 
+                    {/* NEW: The Standalone API-driven feed */}
+                    <StandaloneTimeLogFeed workspaceSlug={workspaceSlug} projectId={projectId} issueId={issueId} />
+
                     <IssueActivity
                       workspaceSlug={workspaceSlug}
                       projectId={projectId}
@@ -237,6 +241,9 @@ export const IssueView = observer(function IssueView(props: IIssueView) {
                             issueServiceType={EIssueServiceType.ISSUES}
                           />
                         </div>
+
+                        {/* NEW: The Standalone API-driven feed */}
+                        <StandaloneTimeLogFeed workspaceSlug={workspaceSlug} projectId={projectId} issueId={issueId} />
 
                         <IssueActivity
                           workspaceSlug={workspaceSlug}

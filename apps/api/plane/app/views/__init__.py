@@ -140,6 +140,8 @@ from .issue.attachment import (
 
 from .issue.comment import IssueCommentViewSet, CommentReactionViewSet
 
+from .issue.time_log import TimeLogViewSet
+
 from .issue.label import LabelViewSet, BulkCreateIssueLabelsEndpoint
 
 from .issue.link import IssueLinkViewSet
