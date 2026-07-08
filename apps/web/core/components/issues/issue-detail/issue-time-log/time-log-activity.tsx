@@ -27,6 +27,9 @@ type TIssueTimeLogFeed = {
   issueId: string;
 };
 
+// How many logs to show before the user has to click "Show more"
+const INITIAL_VISIBLE_LOGS = 5;
+
 // Formats seconds into "1h 4m 5s"
 const formatDuration = (totalSeconds: number) => {
   if (!totalSeconds || isNaN(totalSeconds) || totalSeconds <= 0) return "0s";
@@ -101,6 +104,7 @@ export const StandaloneTimeLogFeed = observer(function StandaloneTimeLogFeed(pro
   const [timeLogs, setTimeLogs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [logToEdit, setLogToEdit] = useState<any | null>(null); // State for the edit modal
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_LOGS); // How many logs are currently shown
   const { data: currentUser } = useUser();
 
   const { getUserDetails } = useMember();
@@ -129,6 +133,11 @@ export const StandaloneTimeLogFeed = observer(function StandaloneTimeLogFeed(pro
     };
   }, [workspaceSlug, projectId, issueId]);
 
+  // Reset how many logs are visible whenever the underlying issue changes
+  useEffect(() => {
+    setVisibleCount(INITIAL_VISIBLE_LOGS);
+  }, [issueId]);
+
   const handleDelete = async (logId: string, timeSeconds: number) => {
     const isConfirmed = window.confirm("Are you sure you want to delete this time log?");
     if (!isConfirmed) return;
@@ -151,17 +160,20 @@ export const StandaloneTimeLogFeed = observer(function StandaloneTimeLogFeed(pro
 
   if (isLoading || timeLogs.length === 0) return null;
 
+  const visibleLogs = timeLogs.slice(0, visibleCount);
+  const remainingCount = timeLogs.length - visibleLogs.length;
+
   return (
     <div className="space-y-4 pt-6">
       <div className="text-h6 text-custom-text-100 mb-4 font-medium">Time Logs</div>
 
       <div className="flex flex-col">
-        {timeLogs.map((log, index) => {
+        {visibleLogs.map((log, index) => {
           // Live timer
           const isActiveTimer = log.tracking_start_time && !log.tracking_end_time;
           const user = getUserDetails(log.created_by);
           const userName = user?.display_name || "Unknown user";
-          const isLast = index === timeLogs.length - 1;
+          const isLast = index === visibleLogs.length - 1 && remainingCount === 0;
 
           return (
             <div key={log.id} className="group relative flex gap-3">
@@ -169,18 +181,19 @@ export const StandaloneTimeLogFeed = observer(function StandaloneTimeLogFeed(pro
               {!isLast && <div className="bg-subtle absolute top-6 bottom-[-8px] left-[11px] z-0 w-[2px]" />}
 
               {/* Timeline Icon */}
-              <div className="relative z-10 mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border border-subtle bg-surface-1">
+
+              <div className="relative z-[4] flex h-6 w-6 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border border-subtle bg-layer-2 text-secondary shadow-raised-100">
                 {isActiveTimer ? (
-                  <Timer className="h-3.5 w-3.5 text-[#F59E0B]" />
+                  <Timer className="h-3 w-3 text-[#F59E0B]" />
                 ) : (
-                  <Clock className="h-3.5 w-3.5 text-secondary" />
+                  <Clock className="h-3 w-3 text-secondary" />
                 )}
               </div>
 
               {/* Content and Actions container */}
               <div className="flex flex-grow justify-between pb-4">
-                <span className="text-sm text-custom-text-200 leading-6">
-                  <span className="text-custom-text-100 font-medium">
+                <span className="text-12 leading-6 text-secondary">
+                  <span className="font-medium text-primary">
                     {`${userName}${currentUser?.id == user?.id ? " (you)" : ""}`}
                   </span>{" "}
                   {isActiveTimer ? (
@@ -191,29 +204,25 @@ export const StandaloneTimeLogFeed = observer(function StandaloneTimeLogFeed(pro
                         <LiveTimer startTime={log.tracking_start_time} />
                       </span>{" "}
                       elapsed since{" "}
-                      <span className="text-custom-text-100 font-medium">{formatLogDate(log.tracking_start_time)}</span>
+                      <span className="font-medium text-primary">{formatLogDate(log.tracking_start_time)}</span>
                     </>
                   ) : (
                     /* Case 1 & 2: Completed Timers and Manual Logs */
                     <>
-                      recorded{" "}
-                      <span className="text-custom-text-100 font-medium">{formatDuration(log.time_seconds)}</span>
+                      recorded <span className="font-medium text-primary">{formatDuration(log.time_seconds)}</span>
                       {log.tracking_start_time && log.tracking_end_time ? (
                         <>
                           {" "}
                           from{" "}
-                          <span className="text-custom-text-100 font-medium">
+                          <span className="font-medium text-primary">
                             {formatLogDate(log.tracking_start_time)}
-                          </span>{" "}
-                          to{" "}
-                          <span className="text-custom-text-100 font-medium">
-                            {formatLogDate(log.tracking_end_time)}
-                          </span>
+                          </span> to{" "}
+                          <span className="font-medium text-primary">{formatLogDate(log.tracking_end_time)}</span>
                         </>
                       ) : (
                         <>
                           {" "}
-                          at <span className="text-custom-text-100 font-medium">{formatLogDate(log.created_at)}</span>
+                          at <span className="font-medium text-primary">{formatLogDate(log.created_at)}</span>
                         </>
                       )}
                     </>
@@ -243,6 +252,21 @@ export const StandaloneTimeLogFeed = observer(function StandaloneTimeLogFeed(pro
             </div>
           );
         })}
+
+        {/* "Show more" control — reveals the rest of the logs on click */}
+        {remainingCount > 0 && (
+          <div className="relative flex gap-3">
+            <div className="relative z-[4] flex h-6 w-6 flex-shrink-0 items-center justify-center" />
+            <div className="flex flex-grow pb-2">
+              <button
+                onClick={() => setVisibleCount((prev) => prev + INITIAL_VISIBLE_LOGS)}
+                className="text-12 font-medium text-accent-primary hover:underline"
+              >
+                Show {Math.min(remainingCount, INITIAL_VISIBLE_LOGS)} more {remainingCount === 1 ? "log" : "logs"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* The Edit Modal */}
