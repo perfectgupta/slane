@@ -36,6 +36,7 @@ import { IssueActivity } from "./issue-activity";
 import { IssueParentDetail } from "./parent";
 import { IssueReaction } from "./reactions";
 import type { TIssueOperations } from "./root";
+import { StandaloneTimeLogFeed } from "./issue-time-log/time-log-activity";
 // services init
 const workItemVersionService = new WorkItemVersionService();
 
@@ -104,7 +105,6 @@ export const IssueMainContent = observer(function IssueMainContent(props: Props)
             issueOperations={issueOperations}
           />
         )}
-
         <div className="mb-2.5 flex items-center justify-between gap-4">
           <IssueTypeSwitcher issueId={issueId} disabled={isArchived || !isEditable} />
           <div className="flex items-center gap-3">
@@ -121,7 +121,6 @@ export const IssueMainContent = observer(function IssueMainContent(props: Props)
             )}
           </div>
         </div>
-
         <IssueTitleInput
           workspaceSlug={workspaceSlug}
           projectId={issue.project_id}
@@ -140,6 +139,7 @@ export const IssueMainContent = observer(function IssueMainContent(props: Props)
           disabled={isArchived || !isEditable}
           editorRef={editorRef}
           entityId={issue.id}
+          issueName={issue.name}
           fileAssetType={EFileAssetType.ISSUE_DESCRIPTION}
           initialValue={issue.description_html}
           key={issue.id}
@@ -154,7 +154,6 @@ export const IssueMainContent = observer(function IssueMainContent(props: Props)
           setIsSubmitting={(value) => setIsSubmitting(value)}
           workspaceSlug={workspaceSlug}
         />
-
         <div className="flex items-center justify-between gap-2">
           {currentUser && (
             <IssueReaction
@@ -207,6 +206,9 @@ export const IssueMainContent = observer(function IssueMainContent(props: Props)
           disabled={!isEditable || isArchived}
         />
       )}
+
+      {/* NEW: The Standalone API-driven feed */}
+      <StandaloneTimeLogFeed workspaceSlug={workspaceSlug} projectId={projectId} issueId={issueId} />
 
       <IssueActivity workspaceSlug={workspaceSlug} projectId={projectId} issueId={issueId} disabled={isArchived} />
     </>

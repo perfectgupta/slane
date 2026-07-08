@@ -161,9 +161,10 @@ export const PageEditorBody = observer(function PageEditorBody(props: Props) {
         onClose={onClose}
         workspaceId={workspaceId}
         workspaceSlug={workspaceSlug}
+        pageTitle={page.name}
       />
     ),
-    [editorRef, workspaceId, workspaceSlug]
+    [editorRef, workspaceId, workspaceSlug, page.name]
   );
 
   const serverHandler: TServerHandler = useMemo(
@@ -281,8 +282,10 @@ export const PageEditorBody = observer(function PageEditorBody(props: Props) {
                 if (!res) throw new Error("Failed in fetching mentions");
                 return res;
               },
-              renderComponent: (props) => <EditorMentionsRoot {...props} />,
-              getMentionedEntityDetails: (id: string) => ({ display_name: getUserDetails(id)?.display_name ?? "" }),
+              renderComponent: (propsVal) => <EditorMentionsRoot {...propsVal} />,
+              getMentionedEntityDetails: (id: string) => ({
+                display_name: getUserDetails(id)?.display_name ?? "",
+              }),
             }}
             updatePageProperties={updatePageProperties}
             realtimeConfig={realtimeConfig}

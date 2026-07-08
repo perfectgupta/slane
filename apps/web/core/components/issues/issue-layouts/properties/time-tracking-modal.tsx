@@ -71,7 +71,7 @@ export const ManualTimeLogModal = ({ isOpen, onClose, workspaceSlug, issue }: Ma
   };
 
   return (
-    <ModalCore isOpen={isOpen} handleClose={onClose} width={EModalWidth.MD} key={issue?.id}>
+    <ModalCore isOpen={isOpen} handleClose={onClose} width={EModalWidth.MD} key={issue?.id} outsideClick="true">
       <div className="flex flex-col gap-4 p-5">
         <h3 className="text-xl text-custom-text-100 font-medium">Log Time</h3>
 

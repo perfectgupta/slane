@@ -23,10 +23,11 @@ type Props = {
   handleOpenNavigationPane: () => void;
   isNavigationPaneOpen: boolean;
   page: TPageInstance;
+  workspaceSlug: string;
 };
 
 export const PageEditorToolbarRoot = observer(function PageEditorToolbarRoot(props: Props) {
-  const { handleOpenNavigationPane, isNavigationPaneOpen, page } = props;
+  const { handleOpenNavigationPane, isNavigationPaneOpen, page, workspaceSlug } = props;
   // translation
   const { t } = useTranslation();
   // derived values
@@ -56,7 +57,9 @@ export const PageEditorToolbarRoot = observer(function PageEditorToolbarRoot(pro
           )}
         >
           <div className="flex w-full max-w-full items-center justify-between">
-            <div className="flex-1">{editorRef && <PageToolbar editorRef={editorRef} />}</div>
+            <div className="flex-1">
+              {editorRef && <PageToolbar editorRef={editorRef} workspaceSlug={workspaceSlug} />}
+            </div>
             <div className="flex items-center gap-2">
               <PageCollaboratorsList page={page} />
               {!isNavigationPaneOpen && (

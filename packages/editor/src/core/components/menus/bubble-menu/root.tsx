@@ -31,10 +31,11 @@ import { CORE_EXTENSIONS } from "@/constants/extension";
 // extensions
 import { isCellSelection } from "@/extensions/table/table/utilities/helpers";
 // types
-import type { IEditorPropsExtended, TEditorCommands, TExtensions } from "@/types";
+import type { IEditorPropsExtended, TAIHandler, TEditorCommands, TExtensions } from "@/types";
 // local imports
 import { TextAlignmentSelector } from "./alignment-selector";
 import { BubbleMenuLinkSelector } from "./link-selector";
+import { Sparkles } from "lucide-react";
 
 type EditorBubbleMenuProps = Omit<BubbleMenuProps, "children">;
 
@@ -47,6 +48,7 @@ export type EditorStateType = {
   left: boolean;
   right: boolean;
   center: boolean;
+  isAIMenuOpen: boolean;
   color:
     | {
         key: string;
@@ -70,10 +72,11 @@ type Props = {
   editor: Editor;
   extendedEditorProps: IEditorPropsExtended;
   flaggedExtensions: TExtensions[];
+  aiHandler?: TAIHandler;
 };
 
 export function EditorBubbleMenu(props: Props) {
-  const { editor } = props;
+  const { editor, aiHandler } = props;
   // states
   const [isSelecting, setIsSelecting] = useState(false);
   // refs
@@ -92,7 +95,7 @@ export function EditorBubbleMenu(props: Props) {
 
   const editorState: EditorStateType = useEditorState({
     editor,
-    selector: ({ editor }) => ({
+    selector: ({ editor: editorVal }) => ({
       code: formattingItems.code.isActive(),
       bold: formattingItems.bold.isActive(),
       italic: formattingItems.italic.isActive(),
@@ -101,8 +104,9 @@ export function EditorBubbleMenu(props: Props) {
       left: formattingItems["text-align"].isActive({ alignment: "left" }),
       right: formattingItems["text-align"].isActive({ alignment: "right" }),
       center: formattingItems["text-align"].isActive({ alignment: "center" }),
-      color: COLORS_LIST.find((c) => TextColorItem(editor).isActive({ color: c.key })),
-      backgroundColor: COLORS_LIST.find((c) => BackgroundColorItem(editor).isActive({ color: c.key })),
+      color: COLORS_LIST.find((c) => TextColorItem(editorVal).isActive({ color: c.key })),
+      backgroundColor: COLORS_LIST.find((c) => BackgroundColorItem(editorVal).isActive({ color: c.key })),
+      isAIMenuOpen: editorVal?.storage.utility?.isAIMenuOpen ?? false,
     }),
   });
 
@@ -112,15 +116,18 @@ export function EditorBubbleMenu(props: Props) {
 
   const bubbleMenuProps: EditorBubbleMenuProps = {
     editor,
-    shouldShow: ({ state, editor }) => {
+    shouldShow: ({ state, editor: editorVal }) => {
       const { selection } = state;
       const { empty } = selection;
 
+      // If AI menu is open, force the bubble menu to stay visible
+      if (editorState.isAIMenuOpen) return true;
+
       if (
         empty ||
-        !editor.isEditable ||
-        editor.isActive(CORE_EXTENSIONS.IMAGE) ||
-        editor.isActive(CORE_EXTENSIONS.CUSTOM_IMAGE) ||
+        !editorVal.isEditable ||
+        editorVal.isActive(CORE_EXTENSIONS.IMAGE) ||
+        editorVal.isActive(CORE_EXTENSIONS.CUSTOM_IMAGE) ||
         isNodeSelection(selection) ||
         isCellSelection(selection) ||
         isSelecting
@@ -140,6 +147,7 @@ export function EditorBubbleMenu(props: Props) {
         editor.commands.addActiveDropbarExtension("bubble-menu");
       },
       onHide: () => {
+        editor.commands.closeAIMenu(); // <-- 4. Reset AI state when menu hides
         if (editor.storage.link) {
           editor.storage.link.isBubbleMenuOpen = false;
         }
@@ -148,6 +156,7 @@ export function EditorBubbleMenu(props: Props) {
         }, 0);
       },
       onHidden: () => {
+        editor.commands.closeAIMenu(); // <-- 4. Reset AI state when menu hides
         if (editor.storage.link) {
           editor.storage.link.isBubbleMenuOpen = false;
         }
@@ -188,11 +197,30 @@ export function EditorBubbleMenu(props: Props) {
 
   return (
     <BubbleMenu {...bubbleMenuProps}>
+      {/* 5. Render standard toolbar if AI menu is CLOSED */}
       {!isSelecting && (
         <div
           ref={menuRef}
           className="horizontal-scrollbar flex scrollbar-xs divide-x divide-subtle-1 overflow-x-scroll rounded-lg border border-subtle bg-surface-1 py-2 shadow-raised-200"
         >
+          {/* AI Menu Trigger Button */}
+          {aiHandler?.menu && (
+            <div className="flex items-center px-2">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  editor.commands.toggleAIMenu();
+                }}
+                className="flex items-center gap-1.5 rounded-sm px-2 py-1 text-12 font-medium text-tertiary hover:bg-layer-1"
+              >
+                <Sparkles className="text-custom-primary-100 size-3.5" />
+                Ask AI
+              </button>
+            </div>
+          )}
+
           <div className="px-2">
             <BubbleMenuNodeSelector editor={editor} />
           </div>

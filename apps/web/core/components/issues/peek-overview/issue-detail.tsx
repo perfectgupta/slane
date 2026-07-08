@@ -139,6 +139,7 @@ export const PeekOverviewIssueDetails = observer(function PeekOverviewIssueDetai
         entityId={issue.id}
         fileAssetType={EFileAssetType.ISSUE_DESCRIPTION}
         initialValue={issueDescription}
+        issueName={issue.name}
         key={issue.id}
         onSubmit={async (value, isMigrationUpdate) => {
           if (!issue.id || !issue.project_id) return;
@@ -172,17 +173,17 @@ export const PeekOverviewIssueDetails = observer(function PeekOverviewIssueDetai
               isRestoreDisabled: disabled || isArchived,
             }}
             fetchHandlers={{
-              listDescriptionVersions: (issueId) =>
+              listDescriptionVersions: (issueIdVal) =>
                 workItemVersionService.listDescriptionVersions(
                   workspaceSlug,
                   issue.project_id?.toString() ?? "",
-                  issueId
+                  issueIdVal
                 ),
-              retrieveDescriptionVersion: (issueId, versionId) =>
+              retrieveDescriptionVersion: (issueIdVal, versionId) =>
                 workItemVersionService.retrieveDescriptionVersion(
                   workspaceSlug,
                   issue.project_id?.toString() ?? "",
-                  issueId,
+                  issueIdVal,
                   versionId
                 ),
             }}

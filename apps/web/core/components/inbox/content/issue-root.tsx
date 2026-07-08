@@ -99,7 +99,8 @@ export const InboxIssueMainContent = observer(function InboxIssueMainContent(pro
 
       remove: async (_workspaceSlug: string, _projectId: string, _issueId: string) => {
         try {
-          await removeIssue(workspaceSlug, projectId, _issueId);
+          // FIX: Use the arguments passed to the function with the underscores
+          await removeIssue(_workspaceSlug, _projectId, _issueId);
           setToast({
             title: "Success!",
             type: TOAST_TYPE.SUCCESS,
@@ -125,15 +126,16 @@ export const InboxIssueMainContent = observer(function InboxIssueMainContent(pro
           });
         }
       },
-      archive: async (workspaceSlug: string, projectId: string, issueId: string) => {
+      archive: async (workspaceSlugVal: string, projectIdVal: string, issueId: string) => {
         try {
-          await archiveIssue(workspaceSlug, projectId, issueId);
+          await archiveIssue(workspaceSlugVal, projectIdVal, issueId);
         } catch (error) {
           console.error("Error in archiving issue:", error);
         }
       },
     }),
-    [inboxIssue]
+    // FIX: Add the missing function dependencies
+    [inboxIssue, removeIssue, archiveIssue]
   );
 
   if (!issue) return <></>;
@@ -174,6 +176,7 @@ export const InboxIssueMainContent = observer(function InboxIssueMainContent(pro
             disabled={!isEditable}
             editorRef={editorRef}
             entityId={issue.id}
+            issueName={issue.name}
             fileAssetType={EFileAssetType.ISSUE_DESCRIPTION}
             initialValue={issue.description_html ?? "<p></p>"}
             key={issue.id}

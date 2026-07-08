@@ -5,7 +5,7 @@
  */
 
 import type { HocuspocusProvider } from "@hocuspocus/provider";
-import type { Editor } from "@tiptap/react";
+import { useEditorState, type Editor } from "@tiptap/react";
 // plane imports
 import { cn } from "@plane/utils";
 // components
@@ -58,13 +58,38 @@ export function PageRenderer(props: Props) {
     titleEditor,
     provider,
     state,
+    aiHandler,
   } = props;
+
+  // 1. Listen for the AI Menu state from Tiptap's extension storage
+  const { isAIMenuOpen } = useEditorState({
+    editor,
+    selector: ({ editor: editorIns }) => ({
+      isAIMenuOpen: editorIns?.storage?.utility?.isAIMenuOpen ?? false,
+    }),
+  });
+
   return (
     <div
-      className={cn("frame-renderer w-full flex-grow", {
+      className={cn("frame-renderer relative w-full flex-grow", {
         "wide-layout": displayConfig.wideLayout,
       })}
     >
+      {/* 3. Render the AI Menu overlaying the editor content */}
+      {isAIMenuOpen && aiHandler?.menu && (
+        <div className="absolute top-[40px] left-[10%] z-[9999] md:left-[15%] lg:left-[20%]">
+          {aiHandler.menu({
+            isOpen: isAIMenuOpen,
+            onClose: () => {
+              // Safely dispatch the close command
+              if (typeof editor.commands.closeAIMenu === "function") {
+                editor.commands.closeAIMenu();
+              }
+            },
+          })}
+        </div>
+      )}
+
       {isLoading ? (
         <DocumentContentLoader className={documentLoaderClassName} />
       ) : (
@@ -105,6 +130,7 @@ export function PageRenderer(props: Props) {
                     disabledExtensions={disabledExtensions}
                     extendedEditorProps={extendedEditorProps}
                     flaggedExtensions={flaggedExtensions}
+                    aiHandler={aiHandler}
                   />
                 )}
                 <BlockMenu

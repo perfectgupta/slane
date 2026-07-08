@@ -18,6 +18,7 @@ type Props = {
   position?: EModalPosition;
   width?: EModalWidth;
   className?: string;
+  outsideClick?: string;
 };
 export function ModalCore(props: Props) {
   const {
@@ -27,6 +28,7 @@ export function ModalCore(props: Props) {
     position = EModalPosition.CENTER,
     width = EModalWidth.XXL,
     className = "",
+    outsideClick,
   } = props;
 
   return (
@@ -34,7 +36,7 @@ export function ModalCore(props: Props) {
       <Dialog
         as="div"
         className="relative z-30"
-        data-prevent-outside-click="true"
+        data-prevent-outside-click={outsideClick}
         onClose={() => handleClose && handleClose()}
       >
         <Transition.Child

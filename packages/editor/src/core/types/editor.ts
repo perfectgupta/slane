@@ -66,6 +66,7 @@ export type TEditorCommands =
   | "attachment"
   | "emoji"
   | "external-embed"
+  | "toggleAIMenu"
   | TExtendedEditorCommands;
 
 export type TCommandExtraProps = {
@@ -124,10 +125,12 @@ export type CoreEditorRefApi = {
     json: JSONContent | null;
   };
   getDocumentInfo: () => TDocumentInfo;
+  getEditorText: () => string;
   getHeadings: () => IMarking[];
   getMarkDown: () => string;
   copyMarkdownToClipboard: () => void;
   getSelectedText: () => string | null;
+  insertAtBottom: (contentHTML: string) => void;
   insertText: (contentHTML: string, insertOnNextLine?: boolean) => void;
   isAnyDropbarOpen: () => boolean;
   isEditorReadyToDiscard: () => boolean;

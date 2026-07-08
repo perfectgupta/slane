@@ -16,9 +16,11 @@ import type { ToolbarMenuItem } from "@plane/editor";
 import { TOOLBAR_ITEMS, TYPOGRAPHY_ITEMS } from "@plane/editor";
 // local imports
 import { ColorDropdown } from "./color-dropdown";
+import { Sparkle } from "lucide-react";
 
 type Props = {
   editorRef: EditorRefApi;
+  workspaceSlug: string;
 };
 
 type ToolbarButtonProps = {
@@ -116,81 +118,106 @@ export function PageToolbar(props: Props) {
   );
 
   return (
-    <div className="animate-in fade-in flex items-center divide-x divide-subtle-1 overflow-x-scroll duration-200">
-      <CustomMenu
-        customButton={
-          <span
-            className={cn(
-              "flex h-7 w-24 items-center justify-between gap-2 rounded-sm border-[0.5px] border-strong px-2 text-left text-13 whitespace-nowrap",
-              {
-                "bg-layer-1-selected text-primary": isTypographyMenuOpen,
-                "text-tertiary hover:bg-layer-1-hover": !isTypographyMenuOpen,
-              }
-            )}
-          >
-            {activeTypography?.name || "Text"}
-            <ChevronDownIcon className="size-3 shrink-0" />
-          </span>
-        }
-        className="pr-2"
-        placement="bottom-start"
-        closeOnSelect
-        maxHeight="lg"
-        menuButtonOnClick={() => setIsTypographyMenuOpen((prev) => !prev)}
-        onMenuClose={() => setIsTypographyMenuOpen(false)}
-      >
-        {TYPOGRAPHY_ITEMS.map((item) => (
-          <CustomMenu.MenuItem
-            key={item.renderKey}
-            className={cn("flex items-center justify-between gap-2", {
-              "bg-layer-transparent-selected text-primary": activeTypography?.itemKey === item.itemKey,
-              "hover:bg-layer-transparent-hover": !(activeTypography?.itemKey === item.itemKey),
-            })}
-            onClick={() => {
-              if (activeTypography?.itemKey !== item.itemKey) {
-                editorRef.executeMenuItemCommand({
-                  itemKey: item.itemKey,
-                  ...item.extraProps,
-                });
-              }
-            }}
-          >
-            <span className="flex items-center gap-2">
-              <item.icon className="size-3" />
-              {item.name}
-            </span>
-            {activeTypography?.itemKey === item.itemKey && <CheckIcon className="size-3 shrink-0 text-tertiary" />}
-          </CustomMenu.MenuItem>
-        ))}
-      </CustomMenu>
-      <div className="shrink-0">
-        <ColorDropdown
-          handleColorSelect={(key, color) =>
-            editorRef.executeMenuItemCommand({
-              itemKey: key,
-              color,
-            })
-          }
-          isColorActive={(key, color) =>
-            editorRef.isMenuItemActive({
-              itemKey: key,
-              color,
-            })
-          }
-        />
+    <div className="flex w-full items-center gap-2">
+      {/* AI Menu Trigger - Kept outside the overflow-x-scroll container to prevent clipping */}
+      {/* AI Menu Trigger - Simply dispatches the command! */}
+      <div className="relative shrink-0 border-r border-subtle-1 pr-2">
+        <button
+          type="button"
+          onClick={(e) => {
+            // STOP the editor from intercepting this click
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Execute the command to toggle the menu state in Tiptap
+            editorRef.executeMenuItemCommand({ itemKey: "toggleAIMenu" });
+          }}
+          className="flex h-7 items-center gap-1.5 rounded-sm border-[0.5px] border-strong px-2 text-13 font-medium text-tertiary transition-colors hover:bg-layer-1-hover"
+        >
+          <Sparkle className="text-custom-primary-100 size-3.5" />
+          Ask AI
+        </button>
       </div>
-      {Object.keys(toolbarItems).map((key) => (
-        <div key={key} className="flex items-center gap-0.5 px-2 first:pl-0 last:pr-0">
-          {toolbarItems[key].map((item) => (
-            <ToolbarButton
+
+      {/* Main Toolbar Tools */}
+      <div className="animate-in fade-in flex flex-1 items-center divide-x divide-subtle-1 overflow-x-scroll duration-200">
+        <CustomMenu
+          customButton={
+            <span
+              className={cn(
+                "flex h-7 w-24 items-center justify-between gap-2 rounded-sm border-[0.5px] border-strong px-2 text-left text-13 whitespace-nowrap",
+                {
+                  "bg-layer-1-selected text-primary": isTypographyMenuOpen,
+                  "text-tertiary hover:bg-layer-1-hover": !isTypographyMenuOpen,
+                }
+              )}
+            >
+              {activeTypography?.name || "Text"}
+              <ChevronDownIcon className="size-3 shrink-0" />
+            </span>
+          }
+          className="pr-2"
+          placement="bottom-start"
+          closeOnSelect
+          maxHeight="lg"
+          menuButtonOnClick={() => setIsTypographyMenuOpen((prev) => !prev)}
+          onMenuClose={() => setIsTypographyMenuOpen(false)}
+        >
+          {TYPOGRAPHY_ITEMS.map((item) => (
+            <CustomMenu.MenuItem
               key={item.renderKey}
-              item={item}
-              isActive={activeStates[item.renderKey]}
-              executeCommand={editorRef.executeMenuItemCommand}
-            />
+              className={cn("flex items-center justify-between gap-2", {
+                "bg-layer-transparent-selected text-primary": activeTypography?.itemKey === item.itemKey,
+                "hover:bg-layer-transparent-hover": !(activeTypography?.itemKey === item.itemKey),
+              })}
+              onClick={() => {
+                if (activeTypography?.itemKey !== item.itemKey) {
+                  editorRef.executeMenuItemCommand({
+                    itemKey: item.itemKey,
+                    ...item.extraProps,
+                  });
+                }
+              }}
+            >
+              <span className="flex items-center gap-2">
+                <item.icon className="size-3" />
+                {item.name}
+              </span>
+              {activeTypography?.itemKey === item.itemKey && <CheckIcon className="size-3 shrink-0 text-tertiary" />}
+            </CustomMenu.MenuItem>
           ))}
+        </CustomMenu>
+
+        <div className="shrink-0 pl-2">
+          <ColorDropdown
+            handleColorSelect={(key, color) =>
+              editorRef.executeMenuItemCommand({
+                itemKey: key,
+                color,
+              })
+            }
+            isColorActive={(key, color) =>
+              editorRef.isMenuItemActive({
+                itemKey: key,
+                color,
+              })
+            }
+          />
         </div>
-      ))}
+
+        {Object.keys(toolbarItems).map((key) => (
+          <div key={key} className="flex items-center gap-0.5 px-2 first:pl-2 last:pr-0">
+            {toolbarItems[key].map((item) => (
+              <ToolbarButton
+                key={item.renderKey}
+                item={item}
+                isActive={activeStates[item.renderKey]}
+                executeCommand={editorRef.executeMenuItemCommand}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -26,7 +26,7 @@ type TActiveDropbarExtensions =
   | TAdditionalActiveDropbarExtensions;
 
 declare module "@tiptap/core" {
-  interface Commands {
+  interface Commands<ReturnType> {
     [CORE_EXTENSIONS.UTILITY]: {
       updateAssetsUploadStatus: (updatedStatus: TFileHandler["assetsUploadStatus"]) => () => void;
       updateAssetsList: (
@@ -40,6 +40,8 @@ declare module "@tiptap/core" {
       ) => () => void;
       addActiveDropbarExtension: (extension: TActiveDropbarExtensions) => () => void;
       removeActiveDropbarExtension: (extension: TActiveDropbarExtensions) => () => void;
+      toggleAIMenu: () => ReturnType;
+      closeAIMenu: () => ReturnType;
     };
   }
   interface Storage {
@@ -53,6 +55,7 @@ export type UtilityExtensionStorage = {
   uploadInProgress: boolean;
   activeDropbarExtensions: TActiveDropbarExtensions[];
   isTouchDevice: boolean;
+  isAIMenuOpen: boolean;
 };
 
 type Props = Pick<IEditorProps, "disabledExtensions" | "flaggedExtensions" | "getEditorMetaData"> & {
@@ -100,6 +103,7 @@ export const UtilityExtension = (props: Props) => {
         uploadInProgress: false,
         activeDropbarExtensions: [],
         isTouchDevice,
+        isAIMenuOpen: false,
       };
     },
 
@@ -116,7 +120,7 @@ export const UtilityExtension = (props: Props) => {
               uniqueAssets.add(args.asset);
             }
           } else if ("idToRemove" in args) {
-            const asset = this.storage.assetsList.find((asset) => asset.id === args.idToRemove);
+            const asset = this.storage.assetsList.find((assetVal) => assetVal.id === args.idToRemove);
             if (asset) {
               uniqueAssets.delete(asset);
             }
@@ -135,6 +139,25 @@ export const UtilityExtension = (props: Props) => {
             this.storage.activeDropbarExtensions.splice(index, 1);
           }
         },
+        toggleAIMenu:
+          () =>
+          ({ editor, tr, dispatch }) => {
+            if (dispatch) {
+              editor.storage.utility.isAIMenuOpen = !editor.storage.utility.isAIMenuOpen;
+              // Dispatch an empty transaction to force React (useEditorState) to re-render
+              tr.setMeta("aiMenuToggled", true);
+            }
+            return true;
+          },
+        closeAIMenu:
+          () =>
+          ({ editor, tr, dispatch }) => {
+            if (dispatch) {
+              editor.storage.utility.isAIMenuOpen = false;
+              tr.setMeta("aiMenuToggled", true);
+            }
+            return true;
+          },
       };
     },
   });

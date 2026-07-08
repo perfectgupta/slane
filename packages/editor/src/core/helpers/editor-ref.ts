@@ -83,6 +83,10 @@ export const getEditorRefHelpers = (args: TArgs): EditorRefApi => {
       paragraphs: getParagraphCount(editor?.state),
       words: editor?.storage.characterCount?.words?.() ?? 0,
     }),
+    getEditorText: () => {
+      if (!editor) return "";
+      return editor.getText();
+    },
     getHeadings: () => (editor ? editor.storage.headingsList?.headings : []),
     getMarkDown: () => {
       if (!editor) return "";
@@ -138,9 +142,16 @@ export const getEditorRefHelpers = (args: TArgs): EditorRefApi => {
     emitRealTimeUpdate: (message) => provider?.sendStateless(message),
     executeMenuItemCommand: (props) => {
       const { itemKey } = props;
+
+      if (itemKey === "toggleAIMenu") {
+        console.log("Toggled");
+        editor?.commands.toggleAIMenu();
+        return;
+      }
+
       const editorItems = getEditorMenuItems(editor);
 
-      const getEditorMenuItem = (itemKey: TEditorCommands) => editorItems.find((item) => item.key === itemKey);
+      const getEditorMenuItem = (itemKeyVal: TEditorCommands) => editorItems.find((item) => item.key === itemKeyVal);
 
       const item = getEditorMenuItem(itemKey);
       if (item) {
@@ -149,7 +160,7 @@ export const getEditorRefHelpers = (args: TArgs): EditorRefApi => {
         console.warn(`No command found for item: ${itemKey}`);
       }
     },
-    focus: (args) => editor?.commands.focus(args),
+    focus: (argsVal) => editor?.commands.focus(argsVal),
     getCoordsFromPos: (pos) => editor?.view.coordsAtPos(pos ?? editor.state.selection.from),
     getCurrentCursorPosition: () => editor?.state.selection.from,
     getAttributesWithExtendedMark: (mark, attribute) => {
@@ -178,10 +189,23 @@ export const getEditorRefHelpers = (args: TArgs): EditorRefApi => {
       const selection = nodesArray.join("");
       return selection;
     },
+    // Add this new helper to reliably append text to the very end of the document
+    insertAtBottom: (contentHTML) => {
+      if (!editor) return;
+      // Get the absolute end position of the document
+      const endPos = editor.state.doc.content.size;
+      editor
+        .chain()
+        .focus()
+        .insertContentAt(endPos, `<p></p>${contentHTML}`) // Adds a line break before the content
+        .run();
+    },
+    // Replace your existing insertText with this (removed the `if (empty) return;` block)
     insertText: (contentHTML, insertOnNextLine) => {
       if (!editor) return;
-      const { from, to, empty } = editor.state.selection;
-      if (empty) return;
+      // Removed 'empty' check so this works even if the user just has a blinking cursor
+      const { from, to } = editor.state.selection;
+
       if (insertOnNextLine) {
         // move cursor to the end of the selection and insert a new line
         editor.chain().focus().setTextSelection(to).insertContent("<br />").insertContent(contentHTML).run();
@@ -195,13 +219,17 @@ export const getEditorRefHelpers = (args: TArgs): EditorRefApi => {
       const { itemKey } = props;
       const editorItems = getEditorMenuItems(editor);
 
-      const getEditorMenuItem = (itemKey: TEditorCommands) => editorItems.find((item) => item.key === itemKey);
+      const getEditorMenuItem = (itemKeyVal: TEditorCommands) => editorItems.find((item) => item.key === itemKeyVal);
       const item = getEditorMenuItem(itemKey);
       if (!item) return false;
 
       return item.isActive(props);
     },
-    listenToRealTimeUpdate: () => provider && { on: provider.on.bind(provider), off: provider.off.bind(provider) },
+    listenToRealTimeUpdate: () =>
+      provider && {
+        on: provider.on.bind(provider),
+        off: provider.off.bind(provider),
+      },
     onDocumentInfoChange: (callback) => {
       const handleDocumentInfoChange = () => {
         if (!editor?.storage) return;
