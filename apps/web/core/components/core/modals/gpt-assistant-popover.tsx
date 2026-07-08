@@ -180,7 +180,7 @@ export function GptAssistantPopover(props: Props) {
   const generateResponseButtonText = isSubmitting ? "Generating..." : response === "" ? "Generate" : "Generate again";
 
   return (
-    <Popover as="div" className="relative w-min text-left">
+    <Popover as="div" className="relative text-left">
       <Popover.Button as={Fragment}>
         <button ref={setReferenceElement} className="flex items-center" tabIndex={-1}>
           {button}
@@ -244,8 +244,8 @@ export function GptAssistantPopover(props: Props) {
               enterFrom="opacity-0 -translate-y-1"
               enterTo="opacity-100 translate-y-0"
             >
-              <div className="rounded-lg border border-subtle bg-surface-2 p-3 text-13">
-                <span className="mb-1 flex items-center gap-1 text-12 font-medium tracking-wide text-accent-primary uppercase">
+              <div className="rounded-lg border border-subtle bg-surface-2 p-3 text-12">
+                <span className="mb-1 flex items-center gap-1 text-11 font-medium tracking-wide text-accent-primary uppercase">
                   <Sparkles className="h-3 w-3" />
                   Response
                 </span>

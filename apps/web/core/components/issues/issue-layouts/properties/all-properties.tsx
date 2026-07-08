@@ -47,6 +47,7 @@ import { WorkItemLayoutAdditionalProperties } from "@/plane-web/components/issue
 // local components
 import { IssuePropertyLabels } from "./labels";
 import { WithDisplayPropertiesHOC } from "./with-display-properties-HOC";
+import { IssueTimelogPropertyListView } from "./time-tracking-list-view";
 
 export interface IIssueProperties {
   issue: TIssue;
@@ -57,6 +58,11 @@ export interface IIssueProperties {
   activeLayout: string;
   isEpic?: boolean;
 }
+
+const handleEventPropagation = (e: SyntheticEvent<HTMLDivElement>) => {
+  e.stopPropagation();
+  e.preventDefault();
+};
 
 export const IssueProperties = observer(function IssueProperties(props: IIssueProperties) {
   const { issue, updateIssue, displayProperties, isReadOnly, className, isEpic = false } = props;
@@ -150,12 +156,16 @@ export const IssueProperties = observer(function IssueProperties(props: IIssuePr
 
   const handleStartDate = async (date: Date | null) => {
     if (updateIssue)
-      await updateIssue(issue.project_id, issue.id, { start_date: date ? renderFormattedPayloadDate(date) : null });
+      await updateIssue(issue.project_id, issue.id, {
+        start_date: date ? renderFormattedPayloadDate(date) : null,
+      });
   };
 
   const handleTargetDate = async (date: Date | null) => {
     if (updateIssue)
-      await updateIssue(issue.project_id, issue.id, { target_date: date ? renderFormattedPayloadDate(date) : null });
+      await updateIssue(issue.project_id, issue.id, {
+        target_date: date ? renderFormattedPayloadDate(date) : null,
+      });
   };
 
   const handleEstimate = async (value: string | undefined) => {
@@ -186,11 +196,6 @@ export const IssueProperties = observer(function IssueProperties(props: IIssuePr
   const minDate = getDate(issue.start_date);
   const maxDate = getDate(issue.target_date);
 
-  const handleEventPropagation = (e: SyntheticEvent<HTMLDivElement>) => {
-    e.stopPropagation();
-    e.preventDefault();
-  };
-
   return (
     <div className={className}>
       {/* basic properties */}
@@ -220,6 +225,20 @@ export const IssueProperties = observer(function IssueProperties(props: IIssuePr
             buttonVariant="border-without-text"
             renderByDefault={isMobile}
             showTooltip
+          />
+        </div>
+      </WithDisplayPropertiesHOC>
+
+      {/* time tracking */}
+      <WithDisplayPropertiesHOC displayProperties={displayProperties} displayPropertyKey="time_tracking">
+        <div className="h-5" onFocus={handleEventPropagation} onClick={handleEventPropagation}>
+          <IssueTimelogPropertyListView
+            workspaceSlug={workspaceSlug?.toString() ?? ""}
+            projectId={issue.project_id}
+            issue={issue}
+            disabled={isReadOnly}
+            buttonVariant="border-with-text"
+            renderByDefault={isMobile}
           />
         </div>
       </WithDisplayPropertiesHOC>

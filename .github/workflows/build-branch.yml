@@ -55,6 +55,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     outputs:
       gh_branch_name: ${{ steps.set_env_variables.outputs.TARGET_BRANCH }}
+      skip_duplicate: ${{ steps.check_duplicate.outputs.skip }}
       dh_img_web: slane-frontend
       dh_img_space: slane-space
       dh_img_admin: slane-admin
@@ -67,12 +68,36 @@ jobs:
           BR_NAME=$( echo "${{ env.TARGET_BRANCH }}" |sed 's/[^a-zA-Z0-9.-]//g')
           echo "TARGET_BRANCH=$BR_NAME" >> $GITHUB_OUTPUT
 
+      # If this run was triggered by a push to a branch (preview/canary) AND the
+      # same commit already has a matching vX.Y.Z tag, skip it. The tag push
+      # fires its own separate run of this workflow, and that's the only one
+      # we want to actually build/push images.
+      - name: Checkout (with tags)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - id: check_duplicate
+        name: Check for a tag already pointing at this commit
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
+        run: |
+          MATCHING_TAG=$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' || true)
+          if [ -n "$MATCHING_TAG" ]; then
+            echo "Found tag(s) on this commit: $MATCHING_TAG -> skipping branch-triggered build"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
   branch_build_push_admin:
-    # ONLY run if triggered manually, OR if commit message contains "release", OR if a tag is pushed
     if: >
-      github.event_name == 'workflow_dispatch' || 
-      contains(github.event.head_commit.message, 'release') || 
-      startsWith(github.ref, 'refs/tags/')
+      needs.branch_build_setup.outputs.skip_duplicate != 'true' && (
+        github.event_name == 'workflow_dispatch' || 
+        contains(github.event.head_commit.message, 'release') || 
+        startsWith(github.ref, 'refs/tags/')
+      )
     name: Build-Push Admin Docker Image
     runs-on: ubuntu-24.04-arm
     needs: [branch_build_setup]
@@ -96,11 +121,12 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ needs.branch_build_setup.outputs.dh_img_admin }}:${{ needs.branch_build_setup.outputs.gh_branch_name }}
 
   branch_build_push_web:
-    # ONLY run if triggered manually, OR if commit message contains "release", OR if a tag is pushed
     if: >
-      github.event_name == 'workflow_dispatch' || 
-      contains(github.event.head_commit.message, 'release') || 
-      startsWith(github.ref, 'refs/tags/')
+      needs.branch_build_setup.outputs.skip_duplicate != 'true' && (
+        github.event_name == 'workflow_dispatch' || 
+        contains(github.event.head_commit.message, 'release') || 
+        startsWith(github.ref, 'refs/tags/')
+      )
     name: Build-Push Web Docker Image
     runs-on: ubuntu-24.04-arm
     needs: [branch_build_setup]
@@ -124,11 +150,12 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ needs.branch_build_setup.outputs.dh_img_web }}:${{ needs.branch_build_setup.outputs.gh_branch_name }}
 
   branch_build_push_space:
-    # ONLY run if triggered manually, OR if commit message contains "release", OR if a tag is pushed
     if: >
-      github.event_name == 'workflow_dispatch' || 
-      contains(github.event.head_commit.message, 'release') || 
-      startsWith(github.ref, 'refs/tags/')
+      needs.branch_build_setup.outputs.skip_duplicate != 'true' && (
+        github.event_name == 'workflow_dispatch' || 
+        contains(github.event.head_commit.message, 'release') || 
+        startsWith(github.ref, 'refs/tags/')
+      )
     name: Build-Push Space Docker Image
     runs-on: ubuntu-24.04-arm
     needs: [branch_build_setup]
@@ -152,11 +179,12 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ needs.branch_build_setup.outputs.dh_img_space }}:${{ needs.branch_build_setup.outputs.gh_branch_name }}
 
   branch_build_push_live:
-    # ONLY run if triggered manually, OR if commit message contains "release", OR if a tag is pushed
     if: >
-      github.event_name == 'workflow_dispatch' || 
-      contains(github.event.head_commit.message, 'release') || 
-      startsWith(github.ref, 'refs/tags/')
+      needs.branch_build_setup.outputs.skip_duplicate != 'true' && (
+        github.event_name == 'workflow_dispatch' || 
+        contains(github.event.head_commit.message, 'release') || 
+        startsWith(github.ref, 'refs/tags/')
+      )
     name: Build-Push Live Docker Image
     runs-on: ubuntu-24.04-arm
     needs: [branch_build_setup]
@@ -180,11 +208,12 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ needs.branch_build_setup.outputs.dh_img_live }}:${{ needs.branch_build_setup.outputs.gh_branch_name }}
 
   branch_build_push_api:
-    # ONLY run if triggered manually, OR if commit message contains "release", OR if a tag is pushed
     if: >
-      github.event_name == 'workflow_dispatch' || 
-      contains(github.event.head_commit.message, 'release') || 
-      startsWith(github.ref, 'refs/tags/')
+      needs.branch_build_setup.outputs.skip_duplicate != 'true' && (
+        github.event_name == 'workflow_dispatch' || 
+        contains(github.event.head_commit.message, 'release') || 
+        startsWith(github.ref, 'refs/tags/')
+      )
     name: Build-Push API Server Docker Image
     runs-on: ubuntu-24.04-arm
     needs: [branch_build_setup]

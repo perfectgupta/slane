@@ -7,7 +7,7 @@
 import React, { useEffect, useState } from "react";
 import { observer } from "mobx-react";
 import { runInAction } from "mobx";
-import { Clock, Pencil, Trash2 } from "lucide-react";
+import { Clock, Pencil, Timer, Trash2 } from "lucide-react";
 // hooks
 import { useMember } from "@/hooks/store/use-member";
 import { useIssueDetail } from "@/hooks/store/use-issue-detail";
@@ -17,6 +17,7 @@ import { IssueService } from "@/services/issue";
 import { Button } from "@plane/propel/button";
 import { EModalWidth, Input, ModalCore } from "@plane/ui";
 import { renderFormattedTime, renderFormattedDate } from "@plane/utils";
+import { useUser } from "@/hooks/store/user";
 
 const issueService = new IssueService();
 
@@ -70,14 +71,40 @@ const parseTimeToSeconds = (str: string) => {
   return Math.floor(totalSeconds);
 };
 
+// --- LIVE TIMER COMPONENT ---
+// Keeps the tick logic isolated to prevent the whole list from re-rendering every second
+const LiveTimer = ({ startTime }: { startTime: string }) => {
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  useEffect(() => {
+    if (!startTime) return;
+    const startTimestamp = new Date(startTime).getTime();
+
+    const updateTimer = () => {
+      const now = Date.now();
+      const diffInSeconds = Math.max(0, Math.floor((now - startTimestamp) / 1000));
+      setElapsedSeconds(diffInSeconds);
+    };
+
+    updateTimer(); // Initial call
+    const interval = setInterval(updateTimer, 1000);
+
+    return () => clearInterval(interval);
+  }, [startTime]);
+
+  return <>{formatDuration(elapsedSeconds)}</>;
+};
+
 export const StandaloneTimeLogFeed = observer(function StandaloneTimeLogFeed(props: TIssueTimeLogFeed) {
   const { workspaceSlug, projectId, issueId } = props;
 
   const [timeLogs, setTimeLogs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [logToEdit, setLogToEdit] = useState<any | null>(null); // State for the edit modal
+  const { data: currentUser } = useUser();
 
   const { getUserDetails } = useMember();
+
   const {
     issue: { getIssueById },
   } = useIssueDetail();
@@ -130,9 +157,8 @@ export const StandaloneTimeLogFeed = observer(function StandaloneTimeLogFeed(pro
 
       <div className="flex flex-col">
         {timeLogs.map((log, index) => {
-          // Hide currently running timers from the history list
-          if (log.tracking_start_time && !log.tracking_end_time) return null;
-
+          // Live timer
+          const isActiveTimer = log.tracking_start_time && !log.tracking_end_time;
           const user = getUserDetails(log.created_by);
           const userName = user?.display_name || "Unknown user";
           const isLast = index === timeLogs.length - 1;
@@ -144,51 +170,75 @@ export const StandaloneTimeLogFeed = observer(function StandaloneTimeLogFeed(pro
 
               {/* Timeline Icon */}
               <div className="relative z-10 mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border border-subtle bg-surface-1">
-                <Clock className="h-3.5 w-3.5 text-secondary" />
+                {isActiveTimer ? (
+                  <Timer className="h-3.5 w-3.5 text-[#F59E0B]" />
+                ) : (
+                  <Clock className="h-3.5 w-3.5 text-secondary" />
+                )}
               </div>
 
               {/* Content and Actions container */}
               <div className="flex flex-grow justify-between pb-4">
                 <span className="text-sm text-custom-text-200 leading-6">
-                  <span className="text-custom-text-100 font-medium">{userName}</span> recorded{" "}
-                  <span className="text-custom-text-100 font-medium">{formatDuration(log.time_seconds)}</span>
-                  {/* Case 2: Timer log */}
-                  {log.tracking_start_time && log.tracking_end_time ? (
+                  <span className="text-custom-text-100 font-medium">
+                    {`${userName}${currentUser?.id == user?.id ? " (you)" : ""}`}
+                  </span>{" "}
+                  {isActiveTimer ? (
+                    /* Case 3: Active Timer */
                     <>
-                      {" "}
-                      from{" "}
-                      <span className="text-custom-text-100 font-medium">
-                        {formatLogDate(log.tracking_start_time)}
+                      is currently working ·{" "}
+                      <span className="font-medium text-[#F59E0B]">
+                        <LiveTimer startTime={log.tracking_start_time} />
                       </span>{" "}
-                      to{" "}
-                      <span className="text-custom-text-100 font-medium">{formatLogDate(log.tracking_end_time)}</span>
+                      elapsed since{" "}
+                      <span className="text-custom-text-100 font-medium">{formatLogDate(log.tracking_start_time)}</span>
                     </>
                   ) : (
-                    /* Case 1: Manual log */
+                    /* Case 1 & 2: Completed Timers and Manual Logs */
                     <>
-                      {" "}
-                      at <span className="text-custom-text-100 font-medium">{formatLogDate(log.created_at)}</span>
+                      recorded{" "}
+                      <span className="text-custom-text-100 font-medium">{formatDuration(log.time_seconds)}</span>
+                      {log.tracking_start_time && log.tracking_end_time ? (
+                        <>
+                          {" "}
+                          from{" "}
+                          <span className="text-custom-text-100 font-medium">
+                            {formatLogDate(log.tracking_start_time)}
+                          </span>{" "}
+                          to{" "}
+                          <span className="text-custom-text-100 font-medium">
+                            {formatLogDate(log.tracking_end_time)}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          {" "}
+                          at <span className="text-custom-text-100 font-medium">{formatLogDate(log.created_at)}</span>
+                        </>
+                      )}
                     </>
                   )}
                 </span>
 
-                {/* Actions (Hidden by default, shown on hover via 'group-hover') */}
-                <div className="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
-                  <button
-                    onClick={() => setLogToEdit(log)}
-                    className="hover:text-custom-text-100 hover:bg-surface-3 flex h-6 w-6 items-center justify-center rounded border border-subtle bg-surface-2 text-secondary transition-colors"
-                    title="Edit log"
-                  >
-                    <Pencil className="h-3 w-3" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(log.id, log.time_seconds)}
-                    className="text-red-500 hover:bg-red-500/10 flex h-6 w-6 items-center justify-center rounded border border-subtle bg-surface-2 transition-colors"
-                    title="Delete log"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
-                </div>
+                {/* Actions (Hidden by default, shown on hover). Hidden entirely for active timers to prevent edit errors. */}
+                {!isActiveTimer && (
+                  <div className="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                    <button
+                      onClick={() => setLogToEdit(log)}
+                      className="hover:text-custom-text-100 hover:bg-surface-3 flex h-6 w-6 items-center justify-center rounded border border-subtle bg-surface-2 text-secondary transition-colors"
+                      title="Edit log"
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(log.id, log.time_seconds)}
+                      className="text-red-500 hover:bg-red-500/10 flex h-6 w-6 items-center justify-center rounded border border-subtle bg-surface-2 transition-colors"
+                      title="Delete log"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           );

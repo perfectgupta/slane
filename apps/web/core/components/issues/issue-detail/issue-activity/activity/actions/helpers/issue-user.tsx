@@ -7,6 +7,7 @@
 import Link from "next/link";
 // hooks
 import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useUser } from "@/hooks/store/user";
 
 type TIssueUser = {
   activityId: string;
@@ -21,6 +22,7 @@ export function IssueUser(props: TIssueUser) {
   } = useIssueDetail();
 
   const activity = getActivityById(activityId);
+  const { data: currentUser } = useUser();
 
   if (!activity) return <></>;
 
@@ -33,7 +35,7 @@ export function IssueUser(props: TIssueUser) {
           href={`/${activity?.workspace_detail?.slug}/profile/${activity?.actor_detail?.id}`}
           className="font-medium text-primary hover:underline"
         >
-          {activity.actor_detail?.display_name}
+          {activity.actor_detail?.display_name} {currentUser?.id == activity.actor_detail.id ? "(you)" : ""}
         </Link>
       )}
     </>

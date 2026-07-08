@@ -10,7 +10,6 @@ import { Button } from "@plane/propel/button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IFormattedInstanceConfiguration, TInstanceAIConfigurationKeys } from "@plane/types";
 // components
-import type { TControllerInputFormField } from "@/components/common/controller-input";
 import { ControllerInput } from "@/components/common/controller-input";
 // hooks
 import { useInstance } from "@/hooks/store";
@@ -21,66 +20,34 @@ type IInstanceAIForm = {
 
 type AIFormValues = Record<TInstanceAIConfigurationKeys, string>;
 
+// Simplified to just handle the provider selection list
+const PROVIDERS: Record<string, string> = {
+  ollama: "Ollama",
+  anthropic: "Anthropic",
+  gemini: "Gemini",
+  groq: "Groq",
+};
+
 export function InstanceAIForm(props: IInstanceAIForm) {
   const { config } = props;
   // store
   const { updateInstanceConfigurations } = useInstance();
+
   // form data
   const {
     handleSubmit,
     control,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<AIFormValues>({
     defaultValues: {
-      LLM_API_KEY: config["LLM_API_KEY"],
-      LLM_MODEL: config["LLM_MODEL"],
+      LLM_PROVIDER: config["LLM_PROVIDER"] || "ollama",
+      LLM_MODEL: config["LLM_MODEL"] || "gemma4:31b",
+      LLM_API_KEY: config["LLM_API_KEY"] || "",
     },
   });
 
-  const aiFormFields: TControllerInputFormField[] = [
-    {
-      key: "LLM_MODEL",
-      type: "text",
-      label: "LLM Model",
-      description: (
-        <>
-          Choose an OpenAI engine.{" "}
-          <a
-            href="https://platform.openai.com/docs/models/overview"
-            target="_blank"
-            className="text-accent-primary hover:underline"
-            rel="noreferrer"
-          >
-            Learn more
-          </a>
-        </>
-      ),
-      placeholder: "gpt-4o-mini",
-      error: Boolean(errors.LLM_MODEL),
-      required: false,
-    },
-    {
-      key: "LLM_API_KEY",
-      type: "password",
-      label: "API key",
-      description: (
-        <>
-          You will find your API key{" "}
-          <a
-            href="https://platform.openai.com/api-keys"
-            target="_blank"
-            className="text-accent-primary hover:underline"
-            rel="noreferrer"
-          >
-            here.
-          </a>
-        </>
-      ),
-      placeholder: "sk-asddassdfasdefqsdfasd23das3dasdcasd",
-      error: Boolean(errors.LLM_API_KEY),
-      required: false,
-    },
-  ];
+  const selectedProvider = watch("LLM_PROVIDER") || "ollama";
 
   const onSubmit = async (formData: AIFormValues) => {
     const payload: Partial<AIFormValues> = { ...formData };
@@ -100,23 +67,50 @@ export function InstanceAIForm(props: IInstanceAIForm) {
     <div className="space-y-8">
       <div className="space-y-3">
         <div>
-          <div className="pb-1 text-18 font-medium text-primary">OpenAI</div>
-          <div className="text-13 font-regular text-tertiary">If you use ChatGPT, this is for you.</div>
+          <div className="pb-1 text-18 font-medium text-primary">LLM Integration</div>
+          <div className="text-13 font-regular text-tertiary">Configure your global instance LLM provider.</div>
         </div>
-        <div className="grid-col grid w-full grid-cols-1 items-center justify-between gap-x-12 gap-y-8 lg:grid-cols-3">
-          {aiFormFields.map((field) => (
-            <ControllerInput
-              key={field.key}
-              control={control}
-              type={field.type}
-              name={field.key}
-              label={field.label}
-              description={field.description}
-              placeholder={field.placeholder}
-              error={field.error}
-              required={field.required}
-            />
-          ))}
+
+        <div className="grid w-full grid-cols-1 items-start gap-x-12 gap-y-8 lg:grid-cols-3">
+          {/* Provider Selection */}
+          <div className="space-y-2">
+            <label className="text-13 font-medium text-secondary">LLM Provider</label>
+            <select
+              {...control.register("LLM_PROVIDER")}
+              className="border-custom-border-200 bg-custom-background-100 text-sm focus:border-accent-primary h-10 w-full rounded border px-3 focus:outline-none"
+            >
+              {Object.entries(PROVIDERS).map(([key, name]) => (
+                <option key={key} value={key}>
+                  {name}
+                </option>
+              ))}
+            </select>
+            <div className="text-xs text-tertiary">Select the model framework provider.</div>
+          </div>
+
+          {/* Text Input for Model */}
+          <ControllerInput
+            control={control}
+            type="text"
+            name="LLM_MODEL"
+            label="LLM Model"
+            description="Enter the specific model ID (e.g., gpt-4o, llama3-8b-8192)."
+            placeholder="gemma4:31b"
+            error={Boolean(errors.LLM_MODEL)}
+            required={true}
+          />
+
+          {/* API Key Input Field */}
+          <ControllerInput
+            control={control}
+            type="password"
+            name="LLM_API_KEY"
+            label="API Key"
+            description="Enter the secure API authorization key matching your selected provider."
+            placeholder={selectedProvider === "ollama" ? "Not required for default local setups" : "sk-..."}
+            error={Boolean(errors.LLM_API_KEY)}
+            required={selectedProvider !== "ollama"}
+          />
         </div>
       </div>
 

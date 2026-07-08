@@ -66,10 +66,22 @@ class GeminiProvider(LLMProvider):
     default_model = "gemma4:31b"
 
 
+class GroqProvider(LLMProvider):
+    name = "Groq"
+    models = [
+        "llama3-8b-8192",
+        "llama3-70b-8192",
+        "mixtral-8x7b-32768",
+        "gemma2-9b-it",
+    ]
+    default_model = "llama3-8b-8192"
+
+
 SUPPORTED_PROVIDERS = {
     "ollama": OllamaProvider,
     "anthropic": AnthropicProvider,
     "gemini": GeminiProvider,
+    "groq": GroqProvider,
 }
 
 
@@ -108,15 +120,6 @@ def get_llm_config() -> Tuple[str | None, str | None, str | None]:
     if not model:
         model = provider.default_model
 
-    # Validate model is supported by provider
-    if model not in provider.models:
-        log_exception(
-            ValueError(
-                f"Model {model} not supported by {provider.name}. Supported models: {', '.join(provider.models)}"
-            )
-        )
-        return None, None, None
-
     return api_key, model, provider_key
 
 
@@ -132,6 +135,8 @@ def get_llm_response(
 
         if provider.lower() == "ollama":
             client = OpenAI(api_key=api_key, base_url="https://ollama.com/v1")
+        elif provider.lower() == "groq":
+            client = OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
         else:
             client = OpenAI(api_key=api_key)
 

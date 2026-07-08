@@ -47,4 +47,7 @@ git commit -m "$COMMIT_MSG"
 git tag -a "$NEW_VERSION" -m "Release $NEW_VERSION"
 
 echo "✅ Successfully committed and tagged $NEW_VERSION"
-echo "🌐 Run 'git push origin HEAD --tags' to push to GitHub and trigger your workflow."
+
+git push origin HEAD --tags
+
+echo "✅ Puched and Triggered Release of $NEW_VERSION"
