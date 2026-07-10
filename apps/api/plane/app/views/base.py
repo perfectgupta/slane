@@ -14,6 +14,7 @@ from django.db import IntegrityError
 from django.urls import resolve
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
+from plane.app.middleware.api_authentication import APIKeyAuthentication
 
 # Third part imports
 from rest_framework import status
